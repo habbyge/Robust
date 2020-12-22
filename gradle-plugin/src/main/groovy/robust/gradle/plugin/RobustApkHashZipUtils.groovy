@@ -25,13 +25,13 @@ class RobustApkHashZipUtils {
 
         for (File source : fileList) {
             if (source.isDirectory()) {
-                zipDir(zipOut, "", source);
+                zipDir(zipOut, "", source)
             } else {
-                zipFile(zipOut, "", source);
+                zipFile(zipOut, "", source)
             }
         }
-        zipOut.flush();
-        zipOut.close();
+        zipOut.flush()
+        zipOut.close()
     }
 
     private static String buildPath(String path, String file) {
@@ -165,7 +165,9 @@ class RobustApkHashZipUtils {
      * @throws Exception
      */
     private
-    static void addZipEntry(ZipOutputStream zipOutputStream, ZipEntry zipEntry, InputStream inputStream) throws Exception {
+    static void addZipEntry(ZipOutputStream zipOutputStream, ZipEntry zipEntry,
+                            InputStream inputStream) throws Exception {
+
         try {
             zipOutputStream.putNextEntry(zipEntry);
             byte[] buffer = new byte[1024];

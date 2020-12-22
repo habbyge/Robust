@@ -8,9 +8,7 @@ import java.util.Set;
 /**
  * Created by mivanzhang on 16/11/3.
  */
-
 public class Constants {
-
     public static final String ORIGINCLASS = "originClass";
     public static final String MODIFY_ANNOTATION = "com.meituan.robust.patch.annotaion.Modify";
     //    public static final String MODIFY_ANNOTATION = Modify.class.getCanonicalName();
@@ -106,7 +104,9 @@ public class Constants {
     public static final String METHOD_MAP_OUT_PATH = "/outputs/robust/methodsMap.robust";
     public static final String INTERFACE_NAME = "com.meituan.robust.ChangeQuickRedirect";
     public static final String INSERT_FIELD_NAME = "changeQuickRedirect";
-    public static final List<String> NO_NEED_REFLECT_CLASS = Arrays.asList("android.os.Bundle","android.os.BaseBundle");
+
+    public static final List<String> NO_NEED_REFLECT_CLASS =
+            Arrays.asList("android.os.Bundle","android.os.BaseBundle");
 
     //robust apk hash : apk's unique id
     public static final String ROBUST_APK_HASH_FILE_NAME = "robust.apkhash";

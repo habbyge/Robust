@@ -9,7 +9,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class PatchProxy {
 
-    private static CopyOnWriteArrayList<RobustExtension> registerExtensionList = new CopyOnWriteArrayList<>();
+    private static CopyOnWriteArrayList<RobustExtension> registerExtensionList
+            = new CopyOnWriteArrayList<>();
     private static ThreadLocal<RobustExtension> robustExtensionThreadLocal = new ThreadLocal<>();
 
     /**
@@ -31,30 +32,62 @@ public class PatchProxy {
      * 之前两个函数调用，每次都需要load 7个参数到栈上，这7个参数还不是简单的基本类型，这意味着比后者多出若干条指令。
      * 数据显示在5W个方法的插桩下，后者能比前者节省200KB
      *
-     * 2. fix一个bug。robust其实支持采用将ChangeQuickRedirect置为null的方法实时下线一个patch，那原来的插桩逻辑就存在线程安全的问题。
+     * 2. fix一个bug。robust其实支持采用将ChangeQuickRedirect置为null的方法实时下线一个patch，那原来的插桩
+     *    逻辑就存在线程安全的问题。
      * 根源在于原来的逻辑中ChangeQuickRedirect是每次都直接去取的static变量值
-     * 如果在执行isSupport的时候ChangeQuickRedirect有值，但执行到accessDispatch时ChangeQuickRedirect被置为空，那就意味着被patch的方法该次将不执行任何代码
-     * 这样会带来一系列的不可知问题。
-     * 封装之后能保证这两个方法读取到的ChangeQuickRedirect是同一份。
+     * 如果在执行isSupport的时候ChangeQuickRedirect有值，但执行到accessDispatch时ChangeQuickRedirect被
+     * 置为空，那就意味着被patch的方法该次将不执行任何代码，这样会带来一系列的不可知问题。封装之后能保证这两个方法
+     * 读取到的ChangeQuickRedirect是同一份。
      */
-    public static PatchProxyResult proxy(Object[] paramsArray, Object current, ChangeQuickRedirect changeQuickRedirect, boolean isStatic, int methodNumber, Class[] paramsClassTypes, Class returnType) {
+    public static PatchProxyResult proxy(Object[] paramsArray, Object current,
+                                         ChangeQuickRedirect changeQuickRedirect,
+                                         boolean isStatic,
+                                         int methodNumber,
+                                         Class[] paramsClassTypes,
+                                         Class returnType) {
+
         PatchProxyResult patchProxyResult = new PatchProxyResult();
-        if (PatchProxy.isSupport(paramsArray, current, changeQuickRedirect, isStatic, methodNumber, paramsClassTypes, returnType)) {
+        if (PatchProxy.isSupport(paramsArray,
+                                current,
+                                changeQuickRedirect,
+                                isStatic,
+                                methodNumber,
+                                paramsClassTypes,
+                                returnType)) {
+
             patchProxyResult.isSupported = true;
-            patchProxyResult.result = PatchProxy.accessDispatch(paramsArray, current, changeQuickRedirect, isStatic, methodNumber, paramsClassTypes, returnType);
+            patchProxyResult.result = PatchProxy.accessDispatch(paramsArray,
+                                                                current,
+                                                                changeQuickRedirect,
+                                                                isStatic,
+                                                                methodNumber,
+                                                                paramsClassTypes,
+                                                                returnType);
         }
         return patchProxyResult;
     }
 
-    public static boolean isSupport(Object[] paramsArray, Object current, ChangeQuickRedirect changeQuickRedirect, boolean isStatic, int methodNumber, Class[] paramsClassTypes, Class returnType) {
-        //Robust补丁优先执行，其他功能靠后
+    public static boolean isSupport(Object[] paramsArray, Object current,
+                                    ChangeQuickRedirect changeQuickRedirect,
+                                    boolean isStatic,
+                                    int methodNumber,
+                                    Class<?>[] paramsClassTypes,
+                                    Class<?> returnType) {
+
+        // Robust补丁优先执行，其他功能靠后
         if (changeQuickRedirect == null) {
             //不执行补丁，轮询其他监听者
             if (registerExtensionList == null || registerExtensionList.isEmpty()) {
                 return false;
             }
             for (RobustExtension robustExtension : registerExtensionList) {
-                if (robustExtension.isSupport(new RobustArguments(paramsArray, current, isStatic, methodNumber, paramsClassTypes, returnType))) {
+                if (robustExtension.isSupport(new RobustArguments(paramsArray,
+                                                                  current,
+                                                                  isStatic,
+                                                                  methodNumber,
+                                                                  paramsClassTypes,
+                                                                  returnType))) {
+
                     robustExtensionThreadLocal.set(robustExtension);
                     return true;
                 }
@@ -74,14 +107,26 @@ public class PatchProxy {
     }
 
 
-    public static Object accessDispatch(Object[] paramsArray, Object current, ChangeQuickRedirect changeQuickRedirect, boolean isStatic, int methodNumber, Class[] paramsClassTypes, Class returnType) {
+    public static Object accessDispatch(Object[] paramsArray,
+                                        Object current,
+                                        ChangeQuickRedirect changeQuickRedirect,
+                                        boolean isStatic,
+                                        int methodNumber,
+                                        Class<?>[] paramsClassTypes,
+                                        Class<?> returnType) {
+
 
         if (changeQuickRedirect == null) {
             RobustExtension robustExtension = robustExtensionThreadLocal.get();
             robustExtensionThreadLocal.remove();
             if (robustExtension != null) {
                 notify(robustExtension.describeSelfFunction());
-                return robustExtension.accessDispatch(new RobustArguments(paramsArray, current, isStatic, methodNumber, paramsClassTypes, returnType));
+                return robustExtension.accessDispatch(new RobustArguments(paramsArray,
+                                                                          current,
+                                                                          isStatic,
+                                                                          methodNumber,
+                                                                          paramsClassTypes,
+                                                                          returnType));
             }
             return null;
         }
@@ -94,13 +139,25 @@ public class PatchProxy {
         return changeQuickRedirect.accessDispatch(classMethod, objects);
     }
 
-    public static void accessDispatchVoid(Object[] paramsArray, Object current, ChangeQuickRedirect changeQuickRedirect, boolean isStatic, int methodNumber, Class[] paramsClassTypes, Class returnType) {
+    public static void accessDispatchVoid(Object[] paramsArray,
+                                          Object current,
+                                          ChangeQuickRedirect changeQuickRedirect,
+                                          boolean isStatic,
+                                          int methodNumber,
+                                          Class<?>[] paramsClassTypes,
+                                          Class<?> returnType) {
+
         if (changeQuickRedirect == null) {
             RobustExtension robustExtension = robustExtensionThreadLocal.get();
             robustExtensionThreadLocal.remove();
             if (robustExtension != null) {
                 notify(robustExtension.describeSelfFunction());
-                robustExtension.accessDispatch(new RobustArguments(paramsArray, current, isStatic, methodNumber, paramsClassTypes, returnType));
+                robustExtension.accessDispatch(new RobustArguments(paramsArray,
+                                                                   current,
+                                                                   isStatic,
+                                                                   methodNumber,
+                                                                   paramsClassTypes,
+                                                                   returnType));
             }
             return;
         }
@@ -112,7 +169,6 @@ public class PatchProxy {
         Object[] objects = getObjects(paramsArray, current, isStatic);
         changeQuickRedirect.accessDispatch(classMethod, objects);
     }
-
 
     private static Object[] getObjects(Object[] arrayOfObject, Object current, boolean isStatic) {
         Object[] objects;
@@ -139,7 +195,8 @@ public class PatchProxy {
         String classMethod = "";
         try {
             //可能过于耗时，这部分需要请自己调用函数
-//            java.lang.StackTraceElement stackTraceElement = (new java.lang.Throwable()).getStackTrace()[2];
+//            java.lang.StackTraceElement stackTraceElement = (
+//                  new java.lang.Throwable()).getStackTrace()[2];
 //            String methodName = stackTraceElement.getMethodName();
 //            String className = stackTraceElement.getClassName();
             String methodName = "";

@@ -12,26 +12,28 @@ import java.util.List;
 public final class RobustAsmUtils {
 
     public final static String REDIRECTFIELD_NAME = "changeQuickRedirect";
-    public final static String REDIRECTCLASSNAME = Type.getDescriptor(com.meituan.robust.ChangeQuickRedirect.class);
+
+    public final static String REDIRECTCLASSNAME =
+            Type.getDescriptor(com.meituan.robust.ChangeQuickRedirect.class);
+
     public final static String PROXYCLASSNAME = "com.meituan.robust.PatchProxy".replace(".", "/");
 
     /**
      * 插入代码
-     *
-     * @param mv
-     * @param className
-     * @param args
-     * @param returnType
-     * @param isStatic
      */
-    public static void createInsertCode(GeneratorAdapter mv, String className, List<Type> args, Type returnType, boolean isStatic, int methodId) {
+    public static void createInsertCode(GeneratorAdapter mv,
+                                        String className,
+                                        List<Type> args,
+                                        Type returnType,
+                                        boolean isStatic,
+                                        int methodId) {
+
         prepareMethodParameters(mv, className, args, returnType, isStatic, methodId);
-        //开始调用
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-                PROXYCLASSNAME,
-                "proxy",
-                "([Ljava/lang/Object;Ljava/lang/Object;" + REDIRECTCLASSNAME + "ZI[Ljava/lang/Class;Ljava/lang/Class;)Lcom/meituan/robust/PatchProxyResult;",
-                false);
+        // 开始调用
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, PROXYCLASSNAME, "proxy",
+            "([Ljava/lang/Object;Ljava/lang/Object;" + REDIRECTCLASSNAME
+                    + "ZI[Ljava/lang/Class;Ljava/lang/Class;)Lcom/meituan/robust/PatchProxyResult;",
+            false);
 
         int local = mv.newLocal(Type.getType("Lcom/meituan/robust/PatchProxyResult;"));
         mv.storeLocal(local);
@@ -43,17 +45,21 @@ public final class RobustAsmUtils {
         Label l1 = new Label();
         mv.visitJumpInsn(Opcodes.IFEQ, l1);
 
-        //判断是否有返回值，代码不同
+        // 判断是否有返回值，代码不同
         if ("V".equals(returnType.getDescriptor())) {
             mv.visitInsn(Opcodes.RETURN);
         } else {
             mv.loadLocal(local);
-            mv.visitFieldInsn(Opcodes.GETFIELD, "com/meituan/robust/PatchProxyResult", "result", "Ljava/lang/Object;");
+            mv.visitFieldInsn(Opcodes.GETFIELD,
+                              "com/meituan/robust/PatchProxyResult",
+                              "result",
+                              "Ljava/lang/Object;");
+
             //强制转化类型
             if (!castPrimateToObj(mv, returnType.getDescriptor())) {
-                //这里需要注意，如果是数组类型的直接使用即可，如果非数组类型，就得去除前缀了,还有最终是没有结束符;
-                //比如：Ljava/lang/String; ==》 java/lang/String
-                String newTypeStr = null;
+                // 这里需要注意，如果是数组类型的直接使用即可，如果非数组类型，就得去除前缀了,还有最终是没有结束符;
+                // 比如：Ljava/lang/String; ==》 java/lang/String
+                String newTypeStr;
                 int len = returnType.getDescriptor().length();
                 if (returnType.getDescriptor().startsWith("[")) {
                     newTypeStr = returnType.getDescriptor().substring(0, len);
@@ -63,14 +69,20 @@ public final class RobustAsmUtils {
                 mv.visitTypeInsn(Opcodes.CHECKCAST, newTypeStr);
             }
 
-            //这里还需要做返回类型不同返回指令也不同
+            // 这里还需要做返回类型不同返回指令也不同
             mv.visitInsn(getReturnTypeCode(returnType.getDescriptor()));
         }
 
         mv.visitLabel(l1);
     }
 
-    private static void prepareMethodParameters(GeneratorAdapter mv, String className, List<Type> args, Type returnType, boolean isStatic, int methodId) {
+    private static void prepareMethodParameters(GeneratorAdapter mv,
+                                                String className,
+                                                List<Type> args,
+                                                Type returnType,
+                                                boolean isStatic,
+                                                int methodId) {
+
         //第一个参数：new Object[]{...};,如果方法没有参数直接传入new Object[0]
         if (args.size() == 0) {
             mv.visitInsn(Opcodes.ICONST_0);
@@ -87,11 +99,7 @@ public final class RobustAsmUtils {
         }
 
         //第三个参数：changeQuickRedirect
-        mv.visitFieldInsn(Opcodes.GETSTATIC,
-                className,
-                REDIRECTFIELD_NAME,
-                REDIRECTCLASSNAME);
-
+        mv.visitFieldInsn(Opcodes.GETSTATIC, className, REDIRECTFIELD_NAME, REDIRECTCLASSNAME);
         //第四个参数：false,标志是否为static
         mv.visitInsn(isStatic ? Opcodes.ICONST_1 : Opcodes.ICONST_0);
         //第五个参数：
@@ -107,12 +115,11 @@ public final class RobustAsmUtils {
     }
 
     private static void createClassArray(GeneratorAdapter mv, List<Type> args) {
-        // create an array of objects capable of containing all the parameters and optionally the "this"
+        //create an array of objects capable of containing all the parameters and optionally the "this"
 
         createLocals(mv, args);
         // we need to maintain the stack index when loading parameters from, as for long and double
         // values, it uses 2 stack elements, all others use only 1 stack element.
-        int stackIndex = 0;
         for (int arrayIndex = 0; arrayIndex < args.size(); arrayIndex++) {
             Type arg = args.get(arrayIndex);
             // duplicate the array of objects reference, it will be used to store the value in.
@@ -144,47 +151,45 @@ public final class RobustAsmUtils {
      */
     protected static void redirectLocal(GeneratorAdapter mv, Type arg) {
         switch (arg.getDescriptor()) {
-            case "Z":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Boolean", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "B":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Byte", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "C":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Character", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "S":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Short", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "I":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Integer", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "F":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Float", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "D":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Double", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "J":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Long", "TYPE", "Ljava/lang/Class;");
-                break;
-            case "V":
-                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Void", "TYPE", "Ljava/lang/Class;");
-                break;
-            default:
-                mv.visitLdcInsn(Type.getType(arg.getDescriptor()));
+        case "Z":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Boolean", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "B":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Byte", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "C":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Character", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "S":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Short", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "I":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Integer", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "F":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Float", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "D":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Double", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "J":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Long", "TYPE", "Ljava/lang/Class;");
+            break;
+        case "V":
+            mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/Void", "TYPE", "Ljava/lang/Class;");
+            break;
+        default:
+            mv.visitLdcInsn(Type.getType(arg.getDescriptor()));
         }
-
     }
 
     /**
      * 创建局部参数代码
-     *
-     * @param mv
-     * @param paramsTypeClass
-     * @param isStatic
      */
-    private static void createObjectArray(MethodVisitor mv, List<Type> paramsTypeClass, boolean isStatic) {
+    private static void createObjectArray(MethodVisitor mv,
+                                          List<Type> paramsTypeClass,
+                                          boolean isStatic) {
+
         //Opcodes.ICONST_0 ~ Opcodes.ICONST_5 这个指令范围
         int argsCount = paramsTypeClass.size();
         //声明 Object[argsCount];
@@ -213,7 +218,8 @@ public final class RobustAsmUtils {
             //比如这里的参数：[a=LLOAD 1] [b=ILOAD 3] [c=DLOAD 4] [d=ILOAD 6];
             if (i >= 1) {
                 //这里需要判断当前参数的前面一个参数的类型是什么
-                if ("J".equals(paramsTypeClass.get(i - 1).getDescriptor()) || "D".equals(paramsTypeClass.get(i - 1).getDescriptor())) {
+                if ("J".equals(paramsTypeClass.get(i - 1).getDescriptor())
+                        || "D".equals(paramsTypeClass.get(i - 1).getDescriptor())) {
                     //如果前面一个参数是long，double类型，load指令索引就要增加1
                     loadIndex++;
                 }
@@ -284,11 +290,6 @@ public final class RobustAsmUtils {
 
     /**
      * 创建基本类型对应的对象
-     *
-     * @param mv
-     * @param argsPostion
-     * @param typeS
-     * @return
      */
     private static boolean createPrimateTypeObj(MethodVisitor mv, int argsPostion, String typeS) {
         if ("Z".equals(typeS)) {
@@ -328,10 +329,6 @@ public final class RobustAsmUtils {
 
     /**
      * 基本类型需要做对象类型分装
-     *
-     * @param mv
-     * @param typeS
-     * @return
      */
     private static boolean castPrimateToObj(MethodVisitor mv, String typeS) {
         if ("Z".equals(typeS)) {
@@ -379,9 +376,6 @@ public final class RobustAsmUtils {
 
     /**
      * 针对不同类型返回指令不一样
-     *
-     * @param typeS
-     * @return
      */
     private static int getReturnTypeCode(String typeS) {
         if ("Z".equals(typeS)) {
@@ -410,5 +404,4 @@ public final class RobustAsmUtils {
         }
         return Opcodes.ARETURN;
     }
-
 }

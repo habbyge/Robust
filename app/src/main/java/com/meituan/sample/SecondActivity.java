@@ -20,10 +20,10 @@ import com.meituan.robust.patch.annotaion.Modify;
 import java.lang.reflect.Field;
 
 public class SecondActivity extends AppCompatActivity implements View.OnClickListener {
-
-    protected static String name = "SecondActivity";
+    protected static final String name = "SecondActivity";
     private ListView listView;
     private String[] multiArr = {"列表1", "列表2", "列表3", "列表4"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,15 +32,17 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         listView = (ListView) findViewById(R.id.listview);
         TextView textView = (TextView) findViewById(R.id.secondtext);
         textView.setOnClickListener(v -> {
-//                    RobustModify.modify();
-                    Log.d("robust", " onclick  in Listener");
-                }
-        );
-        //change text on the  SecondActivity
+//           RobustModify.modify();
+            Log.d("robust", " onclick  in Listener");
+        });
+        // change text on the  SecondActivity
         textView.setText(getTextInfo());
 
-        //test array
-        BaseAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1, multiArr);
+        // test array
+        BaseAdapter adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_expandable_list_item_1,
+                multiArr);
+
         listView.setAdapter(adapter);
         printLog("robust", new String[][]{new String[]{"1", "2", "3"}, new String[]{"4", "5", "6"}});
     }

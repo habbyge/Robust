@@ -13,9 +13,6 @@ import android.support.v4.content.ContextCompat;
 public class PermissionUtils {
     /**
      * 是否有权限
-     *
-     * @param context
-     * @return
      */
     public static boolean checkSelfPermission(Context context, String permission) {
         if (null == context) {
@@ -51,6 +48,9 @@ public class PermissionUtils {
     }
 
     public static void requestSDCardReadPermission(Activity activity, int requestCode) {
-        ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, requestCode);
+
+        ActivityCompat.requestPermissions(activity, new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        }, requestCode);
     }
 }

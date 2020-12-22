@@ -15,6 +15,7 @@ import java.util.zip.ZipOutputStream
  * Created by hedex on 17/2/14.
  */
 class RobustApkHashAction implements Action<Project> {
+
     @Override
     void execute(Project project) {
         project.android.applicationVariants.each { variant ->
@@ -29,8 +30,7 @@ class RobustApkHashAction implements Action<Project> {
 //                def startTime = System.currentTimeMillis()
                 List<File> partFiles = new ArrayList<>()
 
-                if (isGradlePlugin300orAbove(project)){
-
+                if (isGradlePlugin300orAbove(project)) {
                     //protected FileCollection resourceFiles;
                     FileCollection resourceFiles
                     if (isGradlePlugin320orAbove(project)) {
@@ -95,15 +95,6 @@ class RobustApkHashAction implements Action<Project> {
                                 //gradle 5.4+ & gradle tools 3.5.0+ 适配
                                 gradleToolsBigThan350 = true;
                                 assets = packageTask.assets.getAsFileTree()
-//                                for (File file : packageTask.assets.getAsFileTree().getFiles()){
-//                                    if (null == assetsDir) {
-//                                        assetsDir = file.getParentFile()
-//                                    }
-//                                    System.err.println("robust ====== packageTask.assets file  " + file.getAbsolutePath())
-////                                    partFiles.add(file)
-//                                }
-
-//                                System.err.println("robust ====== packageTask.assetsDir   " + assetsDir.getAbsolutePath())
                             }
 
                         } else {
@@ -117,12 +108,11 @@ class RobustApkHashAction implements Action<Project> {
 
                     String robustHash = computeRobustHash(partFiles)
                     if (gradleToolsBigThan350) {
-                        //gradle tools 3.5.0+ , add Constants.ROBUST_APK_HASH_FILE_NAM file to resources.ap_
-//                        createHashFile(assetsDir.getAbsolutePath(), Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
                         for (File file : packageTask.getInputs().getFiles().getAsFileTree()) {
                             if (file.getAbsolutePath().endsWith(".ap_")) {
                                 try {
-                                    createHashFile2(file.getAbsolutePath(), "assets/" + Constants.ROBUST_APK_HASH_FILE_NAME, robustHash);
+                                    createHashFile2(file.getAbsolutePath(), "assets/" +
+                                            Constants.ROBUST_APK_HASH_FILE_NAME, robustHash);
 //                                    System.out.println(">>>write hash:" + robustHash);
                                 } catch (IOException e) {
                                 }
@@ -130,89 +120,98 @@ class RobustApkHashAction implements Action<Project> {
                         }
                     } else if (assets instanceof FileCollection) {
                         FileCollection assetsFileCollection = (FileCollection) assets;
-                        createHashFile(assetsFileCollection.asPath, Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
+
+                        createHashFile(assetsFileCollection.asPath,
+                                Constants.ROBUST_APK_HASH_FILE_NAME,
+                                robustHash)
                     }
                     //额外保存一份Constants.ROBUST_APK_HASH_FILE_NAME文件到build/output/robust，便于CI存储
-                    String buildRobustDir = "${project.buildDir}" + File.separator + "$Constants.ROBUST_GENERATE_DIRECTORY" + File.separator
+                    String buildRobustDir = "${project.buildDir}" + File.separator
+                            + "$Constants.ROBUST_GENERATE_DIRECTORY" + File.separator
+
                     createHashFile(buildRobustDir, Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
                     return
-
                 } else {
+                    File resourceFile = packageTask.resourceFile
+                    if (null == resourceFile) {
+                        return
+                    }
+                    partFiles.add(resourceFile)
 
-                File resourceFile = packageTask.resourceFile
-                if (null == resourceFile) {
-                    return
-                }
-                partFiles.add(resourceFile)
+                    Collection<File> dexFolders = null
+                    try {
+                        dexFolders = packageTask.dexFolders
+                    } catch (MissingPropertyException e) {
+                        // api is not public
+                    }
+                    if (null != dexFolders) {
+                        partFiles.addAll(dexFolders)
+                    }
 
-                Collection<File> dexFolders = null
-                try {
-                    dexFolders = packageTask.dexFolders
-                } catch (MissingPropertyException e) {
-                    // api is not public
-                }
-                if (null != dexFolders) {
-                    partFiles.addAll(dexFolders)
-                }
-
-                Collection<File> javaResourceFiles = null
-                try {
-                    javaResourceFiles = packageTask.javaResourceFiles
-                } catch (MissingPropertyException e) {
-                    // api is not public
-                }
-                if (null != javaResourceFiles) {
-                    partFiles.addAll(javaResourceFiles)
-                }
-
-
-                Collection<File> jniFolders = null
-                try {
-                    jniFolders = packageTask.jniFolders
-                } catch (MissingPropertyException e) {
-                    // api is not public
-                }
-                if (null != jniFolders) {
-                    partFiles.addAll(jniFolders)
-                }
+                    Collection<File> javaResourceFiles = null
+                    try {
+                        javaResourceFiles = packageTask.javaResourceFiles
+                    } catch (MissingPropertyException e) {
+                        // api is not public
+                    }
+                    if (null != javaResourceFiles) {
+                        partFiles.addAll(javaResourceFiles)
+                    }
 
 
-                File assets = null;
-                try {
-                    assets = packageTask.assets
-                } catch (MissingPropertyException e) {
-                    // Android Gradle Plugin version < 2.2.0-beta1
-                }
+                    Collection<File> jniFolders = null
+                    try {
+                        jniFolders = packageTask.jniFolders
+                    } catch (MissingPropertyException e) {
+                        // api is not public
+                    }
+                    if (null != jniFolders) {
+                        partFiles.addAll(jniFolders)
+                    }
 
-                if (null != assets) {
-                    partFiles.add(assets)
-                }
 
-                String robustHash = computeRobustHash(partFiles)
+                    File assets = null;
+                    try {
+                        assets = packageTask.assets
+                    } catch (MissingPropertyException e) {
+                        // Android Gradle Plugin version < 2.2.0-beta1
+                    }
 
-                if (null != assets) {
-                    // Android Gradle Plugin is 2.2.0-beta1 + , assets is able to access
-                    createHashFile(assets.absolutePath, Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
-                } else {
-                    // add robustHashFile to resourceFile
-                    File robustHashFile = createHashFile(resourceFile.parentFile.absolutePath, Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
-                    RobustApkHashZipUtils.addApkHashFile2ApFile(resourceFile, robustHashFile);
-                }
+                    if (null != assets) {
+                        partFiles.add(assets)
+                    }
 
-                String buildRubustDir = "${project.buildDir}" + File.separator + "$Constants.ROBUST_GENERATE_DIRECTORY" + File.separator
-                createHashFile(buildRubustDir, Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
+                    String robustHash = computeRobustHash(partFiles)
 
-//                def cost = (System.currentTimeMillis() - startTime) / 1000
-//                logger.quiet "robust apk hash is $robustHash"
-//                logger.quiet "compute robust apk hash cost $cost second"
-//                project.logger.quiet("===compute robust apk hash end===")
+                    if (null != assets) {
+                        // Android Gradle Plugin is 2.2.0-beta1 + , assets is able to access
+                        createHashFile(assets.absolutePath,
+                                       Constants.ROBUST_APK_HASH_FILE_NAME,
+                                       robustHash)
+                    } else {
+                        // add robustHashFile to resourceFile
+                        File robustHashFile = createHashFile(resourceFile.parentFile.absolutePath,
+                                                             Constants.ROBUST_APK_HASH_FILE_NAME,
+                                                             robustHash)
+
+                        RobustApkHashZipUtils.addApkHashFile2ApFile(resourceFile, robustHashFile);
+                    }
+
+                    String buildRubustDir = "${project.buildDir}" + File.separator
+                            + "$Constants.ROBUST_GENERATE_DIRECTORY" + File.separator
+
+                    createHashFile(buildRubustDir, Constants.ROBUST_APK_HASH_FILE_NAME, robustHash)
+
+    //                def cost = (System.currentTimeMillis() - startTime) / 1000
+    //                logger.quiet "robust apk hash is $robustHash"
+    //                logger.quiet "compute robust apk hash cost $cost second"
+    //                project.logger.quiet("===compute robust apk hash end===")
                 }
             }
         }
     }
 
-
-    def String computeRobustHash(ArrayList<File> partFiles) {
+    static String computeRobustHash(ArrayList<File> partFiles) {
         File sumFile = new File("temp_robust_sum.zip")
         RobustApkHashZipUtils.packZip(sumFile, partFiles)
         String apkHashValue = fileMd5(sumFile)
@@ -222,26 +221,26 @@ class RobustApkHashAction implements Action<Project> {
         return apkHashValue
     }
 
-    def String fileMd5(File file) {
+    static String fileMd5(File file) {
         if (!file.isFile()) {
             return "";
         }
-        MessageDigest digest;
-        byte[] buffer = new byte[4096];
-        int len;
+        MessageDigest digest
+        byte[] buffer = new byte[4096]
+        int len
         try {
-            digest = MessageDigest.getInstance("MD5");
-            FileInputStream inputStream = new FileInputStream(file);
+            digest = MessageDigest.getInstance("MD5")
+            FileInputStream inputStream = new FileInputStream(file)
             while ((len = inputStream.read(buffer, 0, 1024)) != -1) {
-                digest.update(buffer, 0, len);
+                digest.update(buffer, 0, len)
             }
-            inputStream.close();
+            inputStream.close()
         } catch (Exception e) {
-            return "";
+            return ""
         }
 
-        BigInteger bigInt = new BigInteger(1, digest.digest());
-        return bigInt.toString(16);
+        BigInteger bigInt = new BigInteger(1, digest.digest())
+        return bigInt.toString(16)
     }
 
     def static File createHashFile(String dir, String hashFileName, String hashValue) {
@@ -256,9 +255,11 @@ class RobustApkHashAction implements Action<Project> {
         return hashFile
     }
 
-    def static void createHashFile2(String filePath, String fileName, String content) throws IOException {
+    static void createHashFile2(String filePath, String fileName,
+                                String content) throws IOException {
+
         ZipInputStream zis = new ZipInputStream(new FileInputStream(filePath));
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(filePath + ".temp"));
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(filePath + ".temp"))
         ZipEntry entry = zis.getNextEntry();
         while (entry != null) {
             zos.putNextEntry(new ZipEntry(entry.getName()));
@@ -298,9 +299,11 @@ class RobustApkHashAction implements Action<Project> {
     /**
      *
      * @param lhsVersion gradle version code {@code lhsVersion}
-     * @param rhsVersion second gradle version code {@code rhsVersion} to compare with {@code lhsVersion}
-     * @return an integer < 0 if {@code lhsVersion} is less than {@code rhsVersion}, 0 if they are
-     *         equal, and > 0 if {@code lhsVersion} is greater than {@code rhsVersion}.
+     * @param rhsVersion second gradle version code {@code rhsVersion}
+     *        to compare with {@code lhsVersion}
+     * @return an integer < 0 if {@code lhsVersion} is less than {@code rhsVersion},
+     *         0 if they are equal, and > 0 if {@code lhsVersion} is greater than
+     *         {@code rhsVersion}.
      */
     private static int compare(String lhsVersion, String rhsVersion) {
         def lhsArray = lhsVersion.split("\\.")
