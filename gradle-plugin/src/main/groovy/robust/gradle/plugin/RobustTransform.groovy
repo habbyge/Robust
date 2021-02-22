@@ -107,20 +107,17 @@ class RobustTransform extends Transform implements Plugin<Project> {
             useASM = true
         }
 
-        if (null != robust.switch.filterMethod && "true" ==
-                String.valueOf(robust.switch.turnOnExceptMethod.text())) {
+        if (null != robust.switch.filterMethod && "true" == String.valueOf(robust.switch.turnOnExceptMethod.text())) {
             isExceptMethodLevel = true
         }
 
-        if (robust.switch.forceInsert != null && "true" ==
-                String.valueOf(robust.switch.forceInsert.text())) {
+        if (robust.switch.forceInsert != null && "true" == String.valueOf(robust.switch.forceInsert.text())) {
             isForceInsert = true
         } else {
             isForceInsert = false
         }
 
-        if (robust.switch.forceInsertLambda != null && "true" ==
-                String.valueOf(robust.switch.forceInsertLambda.text()))
+        if (robust.switch.forceInsertLambda != null && "true" == String.valueOf(robust.switch.forceInsertLambda.text()))
             isForceInsertLambda = true
         else
             isForceInsertLambda = false

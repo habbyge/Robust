@@ -1,6 +1,8 @@
 package com.meituan.robust;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -89,6 +91,7 @@ public class PatchExecutor extends Thread {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.CUPCAKE)
     protected boolean patch(Context context, Patch patch) {
         if (!patchManipulate.verifyPatch(context, patch)) {
             robustCallBack.logNotify("verifyPatch failure, patch info:"
@@ -219,8 +222,8 @@ public class PatchExecutor extends Thread {
      * @param c
      * @return 返回缓存补丁路径，一般是内部存储,补丁目录
      */
-    private static File getPatchCacheDirPath(Context c, String key) {
-        File patchTempDir = c.getDir(ROBUST_PATCH_CACHE_DIR + key, Context.MODE_PRIVATE);
+    private static File getPatchCacheDirPath(Context ctx, String key) {
+        File patchTempDir = ctx.getDir(ROBUST_PATCH_CACHE_DIR + key, Context.MODE_PRIVATE);
         if (!patchTempDir.exists()) {
             boolean mkdirRet = patchTempDir.mkdir();
             Log.i(TAG, "getPatchCacheDirPath, mkdirRet=" + mkdirRet);

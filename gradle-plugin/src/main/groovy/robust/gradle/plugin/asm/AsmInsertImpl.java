@@ -31,7 +31,6 @@ import javassist.CtClass;
 import javassist.bytecode.AccessFlag;
 import robust.gradle.plugin.InsertcodeStrategy;
 
-
 /**
  * Created by zhangmeng on 2017/5/10.
  * insert code using asm
@@ -47,7 +46,7 @@ public class AsmInsertImpl extends InsertcodeStrategy {
                          boolean isForceInsertLambda) {
 
         super(hotfixPackageList, hotfixMethodList, exceptPackageList, exceptMethodList,
-                isHotfixMethodLevel, isExceptMethodLevel, isForceInsertLambda);
+              isHotfixMethodLevel, isExceptMethodLevel, isForceInsertLambda);
     }
 
     @Override
@@ -106,7 +105,6 @@ public class AsmInsertImpl extends InsertcodeStrategy {
                                    null, null);
         }
 
-
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc,
                                          String signature, String[] exceptions) {
@@ -114,8 +112,7 @@ public class AsmInsertImpl extends InsertcodeStrategy {
             if (isProtect(access)) {
                 access = setPublic(access);
             }
-            MethodVisitor mv = super.visitMethod(access, name,
-                    desc, signature, exceptions);
+            MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
             if (!isQualifiedMethod(access, name, desc, methodInstructionTypeMap)) {
                 return mv;
