@@ -8,9 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Created by c_kunwu on 16/7/5.
  */
 public class PatchProxy {
-
-    private static CopyOnWriteArrayList<RobustExtension> registerExtensionList
-            = new CopyOnWriteArrayList<>();
+    private static CopyOnWriteArrayList<RobustExtension> registerExtensionList = new CopyOnWriteArrayList<>();
     private static ThreadLocal<RobustExtension> robustExtensionThreadLocal = new ThreadLocal<>();
 
     /**

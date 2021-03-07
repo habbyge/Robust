@@ -19,7 +19,6 @@ public class Constants {
 
     public static final String PATCH_TEMPLATE_FULL_NAME = "com.meituan.robust.utils.PatchTemplate";
 
-
     public static final String ZIP_FILE_NAME = "meituan.jar";
     public static final String PATACH_DEX_NAME = "patch.dex";
     public static final String CLASSES_DEX_NAME = "classes.dex";
@@ -112,7 +111,4 @@ public class Constants {
     public static final String ROBUST_APK_HASH_FILE_NAME = "robust.apkhash";
     public static final String ASPECTJ_AROUND_CLASS = "org.aspectj.runtime.internal.AroundClosure";
     public static final String PATCH_EXECUTE = "patch execute ,other extension will be ignore ";
-
-
-
 }

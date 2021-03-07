@@ -26,8 +26,11 @@ public final class Config {
     public static boolean supportProGuard = true;
     public static boolean isLogging = true;
     public static boolean isManual = false;
+
     public static String patchPackageName = Constants.PATCH_PACKAGENAME;
+
     public static String mappingFilePath;
+
     public static Set<String> patchMethodSignatureSet = new HashSet<>();
     public static List<String> newlyAddedClassNameList = new ArrayList<String>();
     public static Set newlyAddedMethodSet = new HashSet<String>();
@@ -38,9 +41,8 @@ public final class Config {
     public static Map<String, List<CtMethod>> invokeSuperMethodMap = new HashMap<>();
     public static ClassPool classPool = new ClassPool();
     public static Set methodNeedPatchSet = new HashSet();
-    public static List<CtMethod> addedSuperMethodList = new ArrayList<>();
+    public static List<CtMethod> addedSuperMethodList = new ArrayList<CtMethod>();
     public static Set<String> noNeedReflectClassSet = new HashSet<>();
-
 
     public static void init() {
         catchReflectException = false;

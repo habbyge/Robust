@@ -13,9 +13,7 @@ import robust.gradle.plugin.javaassist.JavaAssistInsertImpl
 import java.util.zip.GZIPOutputStream
 /**
  * Created by mivanzhang on 16/11/3.
- *
  * insert code
- *
  */
 class RobustTransform extends Transform implements Plugin<Project> {
     Project project

@@ -42,15 +42,21 @@ public class SmaliTool {
     }
 
     private SmaliTool() {
-
     }
 
     public void dealObscureInSmali() {
-        File diretory = new File(Config.robustGenerateDirectory + "classout" + File.separator + Config.patchPackageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)));
+        File diretory = new File(Config.robustGenerateDirectory + "classout" + File.separator +
+                Config.patchPackageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator)));
+
         if (!diretory.isDirectory() || diretory == null) {
-            throw new RuntimeException(Config.robustGenerateDirectory + Config.patchPackageName.replaceAll(".", Matcher.quoteReplacement(File.separator)) + " contains no smali file error!! ");
+            throw new RuntimeException(Config.robustGenerateDirectory +
+                    Config.patchPackageName.replaceAll(".", Matcher.quoteReplacement(File.separator)) +
+                    " contains no smali file error!! ");
         }
-        List<File> smaliFileList = covertPathToFile(Config.robustGenerateDirectory + "classout" + File.separator, Config.newlyAddedClassNameList);
+
+        List<File> smaliFileList = covertPathToFile(Config.robustGenerateDirectory +
+                "classout" + File.separator, Config.newlyAddedClassNameList);
+
         for (File file : diretory.listFiles()) {
             smaliFileList.add(file);
         }
@@ -98,7 +104,8 @@ public class SmaliTool {
         }
         List<File> fileList = new ArrayList<>();
         for (String packname : packNameList) {
-            fileList.add(new File(directory + packname.replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + ".smali"));
+            fileList.add(new File(directory + packname.replaceAll("\\.",
+                    Matcher.quoteReplacement(File.separator)) + ".smali"));
         }
         return fileList;
     }
@@ -308,35 +315,35 @@ public class SmaliTool {
             if (Constants.PRIMITIVE_TYPE.contains(String.valueOf(methodSigure.charAt(index)))) {
 
                 switch (methodSigure.charAt(index)) {
-                    case 'Z':
-                        methodSignureBuilder.append("boolean");
-                        break;
-                    case 'C':
-                        methodSignureBuilder.append("char");
-                        break;
-                    case 'B':
-                        methodSignureBuilder.append("byte");
-                        break;
-                    case 'S':
-                        methodSignureBuilder.append("short");
-                        break;
-                    case 'I':
-                        methodSignureBuilder.append("int");
-                        break;
-                    case 'J':
-                        methodSignureBuilder.append("long");
-                        break;
-                    case 'F':
-                        methodSignureBuilder.append("float");
-                        break;
-                    case 'D':
-                        methodSignureBuilder.append("double");
-                        break;
-                    case 'V':
-                        methodSignureBuilder.append("void");
-                        break;
-                    default:
-                        break;
+                case 'Z':
+                    methodSignureBuilder.append("boolean");
+                    break;
+                case 'C':
+                    methodSignureBuilder.append("char");
+                    break;
+                case 'B':
+                    methodSignureBuilder.append("byte");
+                    break;
+                case 'S':
+                    methodSignureBuilder.append("short");
+                    break;
+                case 'I':
+                    methodSignureBuilder.append("int");
+                    break;
+                case 'J':
+                    methodSignureBuilder.append("long");
+                    break;
+                case 'F':
+                    methodSignureBuilder.append("float");
+                    break;
+                case 'D':
+                    methodSignureBuilder.append("double");
+                    break;
+                case 'V':
+                    methodSignureBuilder.append("void");
+                    break;
+                default:
+                    break;
                 }
                 if (isArray) {
                     methodSignureBuilder.append("[]");
@@ -372,35 +379,35 @@ public class SmaliTool {
             if (Constants.PRIMITIVE_TYPE.contains(String.valueOf(smaliLine.charAt(index)))) {
 
                 switch (smaliLine.charAt(index)) {
-                    case 'Z':
-                        packageNameList.add("boolean");
-                        break;
-                    case 'C':
-                        packageNameList.add("char");
-                        break;
-                    case 'B':
-                        packageNameList.add("byte");
-                        break;
-                    case 'S':
-                        packageNameList.add("short");
-                        break;
-                    case 'I':
-                        packageNameList.add("int");
-                        break;
-                    case 'J':
-                        packageNameList.add("long");
-                        break;
-                    case 'F':
-                        packageNameList.add("float");
-                        break;
-                    case 'D':
-                        packageNameList.add("double");
-                        break;
-                    case 'V':
-                        packageNameList.add("void");
-                        break;
-                    default:
-                        break;
+                case 'Z':
+                    packageNameList.add("boolean");
+                    break;
+                case 'C':
+                    packageNameList.add("char");
+                    break;
+                case 'B':
+                    packageNameList.add("byte");
+                    break;
+                case 'S':
+                    packageNameList.add("short");
+                    break;
+                case 'I':
+                    packageNameList.add("int");
+                    break;
+                case 'J':
+                    packageNameList.add("long");
+                    break;
+                case 'F':
+                    packageNameList.add("float");
+                    break;
+                case 'D':
+                    packageNameList.add("double");
+                    break;
+                case 'V':
+                    packageNameList.add("void");
+                    break;
+                default:
+                    break;
                 }
             }
 

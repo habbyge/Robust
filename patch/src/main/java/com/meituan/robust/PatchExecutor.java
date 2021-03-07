@@ -23,10 +23,7 @@ public class PatchExecutor extends Thread {
     protected PatchManipulate patchManipulate;
     protected RobustCallBack robustCallBack;
 
-    public PatchExecutor(Context context,
-                         PatchManipulate patchManipulate,
-                         RobustCallBack robustCallBack) {
-
+    public PatchExecutor(Context context, PatchManipulate patchManipulate, RobustCallBack robustCallBack) {
         this.context = context.getApplicationContext();
         this.patchManipulate = patchManipulate;
         this.robustCallBack = robustCallBack;
@@ -60,33 +57,30 @@ public class PatchExecutor extends Thread {
             return;
         }
         Log.i("robust", " patchManipulate list size is " + patches.size());
-        for (Patch p : patches) {
-            if (p.isAppliedSuccess()) {
-                Log.i("robust", "p.isAppliedSuccess() skip " + p.getLocalPath());
+        for (Patch patch : patches) {
+            if (patch.isAppliedSuccess()) {
+                Log.i("robust", "patch.isAppliedSuccess() skip " + patch.getLocalPath());
                 continue;
             }
-            if (patchManipulate.ensurePatchExist(p)) {
+
+            if (patchManipulate.ensurePatchExist(patch)) {
                 boolean currentPatchResult = false;
                 try {
-                    currentPatchResult = patch(context, p);
+                    currentPatchResult = patch(context, patch);
                 } catch (Throwable t) {
-                    robustCallBack.exceptionNotify(t,
-                            "class:PatchExecutor method:applyPatchList line:69");
+                    robustCallBack.exceptionNotify(t, "class:PatchExecutor method:applyPatchList line:69");
                 }
                 if (currentPatchResult) {
                     // 设置patch 状态为成功
-                    p.setAppliedSuccess(true);
+                    patch.setAppliedSuccess(true);
                     // 统计PATCH成功率 PATCH成功
-                    robustCallBack.onPatchApplied(true, p);
-
+                    robustCallBack.onPatchApplied(true, patch);
                 } else {
                     // 统计PATCH成功率 PATCH失败
-                    robustCallBack.onPatchApplied(false, p);
+                    robustCallBack.onPatchApplied(false, patch);
                 }
 
-                Log.i("robust", "patch LocalPath:" + p.getLocalPath()
-                        + ",apply result " + currentPatchResult);
-
+                Log.i("robust", "patch LocalPath:" + patch.getLocalPath() + ",apply result " + currentPatchResult);
             }
         }
     }
@@ -102,14 +96,12 @@ public class PatchExecutor extends Thread {
             return false;
         }
 
+        // 把 patch 中的类加载到虚拟机中
         ClassLoader classLoader = null;
-
         try {
             File dexOutputDir = getPatchCacheDirPath(context, patch.getName() + patch.getMd5());
-
             classLoader = new DexClassLoader(patch.getTempPath(),
-                                             dexOutputDir.getAbsolutePath(),
-                                             null,
+                                             dexOutputDir.getAbsolutePath(), null,
                                              PatchExecutor.class.getClassLoader());
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -122,8 +114,10 @@ public class PatchExecutor extends Thread {
         Class<?> patchesInfoClass;
         PatchesInfo patchesInfo = null;
         try {
-            Log.i("robust", "patch patch_info_name:" + patch.getPatchesInfoImplClassFullName());
-            patchesInfoClass = classLoader.loadClass(patch.getPatchesInfoImplClassFullName());
+            // 包含 patch 信息的类全称
+            String patchInfoClassName = patch.getPatchesInfoImplClassFullName();
+            Log.i("robust", "patch patch_info_name:" + patchInfoClassName);
+            patchesInfoClass = classLoader.loadClass(patchInfoClassName);
             patchesInfo = (PatchesInfo) patchesInfoClass.newInstance();
         } catch (Throwable t) {
             Log.e("robust", "patch failed 188 ", t);
@@ -138,7 +132,7 @@ public class PatchExecutor extends Thread {
             return false;
         }
 
-        //classes need to patch
+        // classes need to patch
         List<PatchedClassInfo> patchedClasses = patchesInfo.getPatchedClassesInfo();
         if (null == patchedClasses || patchedClasses.isEmpty()) {
             //手写的补丁有时候会返回一个空list
@@ -169,13 +163,11 @@ public class PatchExecutor extends Thread {
                 }
 
                 Field[] fields = sourceClass.getDeclaredFields();
-                Log.i("robust", "oldClass :" + sourceClass + "     fields " + fields.length);
+                Log.i("robust", "oldClass :" + sourceClass + " fields " + fields.length);
                 Field changeQuickRedirectField = null;
                 for (Field field : fields) {
-                    if (TextUtils.equals(field.getType().getCanonicalName(),
-                            ChangeQuickRedirect.class.getCanonicalName())
-                            && TextUtils.equals(field.getDeclaringClass().getCanonicalName(),
-                            sourceClass.getCanonicalName())) {
+                    if (TextUtils.equals(field.getType().getCanonicalName(), ChangeQuickRedirect.class.getCanonicalName())
+                            && TextUtils.equals(field.getDeclaringClass().getCanonicalName(), sourceClass.getCanonicalName())) {
 
                         changeQuickRedirectField = field;
                         break;
@@ -194,8 +186,7 @@ public class PatchExecutor extends Thread {
                     continue;
                 }
 
-                Log.i("robust", "current path:" + patchedClassName
-                        + " find:ChangeQuickRedirect " + patchClassName);
+                Log.i("robust", "current path:" + patchedClassName + " find:ChangeQuickRedirect " + patchClassName);
 
                 try {
                     patchClass = classLoader.loadClass(patchClassName);

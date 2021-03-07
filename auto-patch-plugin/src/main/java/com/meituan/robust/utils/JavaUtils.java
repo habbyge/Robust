@@ -28,18 +28,7 @@ import static com.meituan.robust.Constants.ORIGINCLASS;
 /**
  * Created by mivanzhang on 16/11/25.
  */
-
 public class JavaUtils {
-
-//    public static void removeJarFromLibs() {
-//        File file;
-//        for (String libName : LIB_NAME_ARRAY) {
-//            file = new File(AutoPatchTransform.ROBUST_DIR + libName);
-//            if (file.exists()) {
-//                file.delete();
-//            }
-//        }
-//    }
 
     public static Object getMapFromZippedFile(String path) {
         File file = new File(path);
@@ -113,32 +102,32 @@ public class JavaUtils {
     public static String getWrapperClass(String typeName) {
         String warpperType = typeName;
         switch (typeName) {
-            case "boolean":
-                warpperType = "java.lang.Boolean";
-                break;
-            case "byte":
-                warpperType = "java.lang.Byte";
-                break;
-            case "char":
-                warpperType = "java.lang.Character";
-                break;
-            case "double":
-                warpperType = "java.lang.Double";
-                break;
-            case "float":
-                warpperType = "java.lang.Float";
-                break;
-            case "int":
-                warpperType = "java.lang.Integer";
-                break;
-            case "long":
-                warpperType = "java.lang.Long";
-                break;
-            case "short":
-                warpperType = "java.lang.Short";
-                break;
-            default:
-                break;
+        case "boolean":
+            warpperType = "java.lang.Boolean";
+            break;
+        case "byte":
+            warpperType = "java.lang.Byte";
+            break;
+        case "char":
+            warpperType = "java.lang.Character";
+            break;
+        case "double":
+            warpperType = "java.lang.Double";
+            break;
+        case "float":
+            warpperType = "java.lang.Float";
+            break;
+        case "int":
+            warpperType = "java.lang.Integer";
+            break;
+        case "long":
+            warpperType = "java.lang.Long";
+            break;
+        case "short":
+            warpperType = "java.lang.Short";
+            break;
+        default:
+            break;
         }
         return warpperType;
     }
@@ -146,32 +135,32 @@ public class JavaUtils {
     public static String wrapperToPrime(String typeName) {
         String warpperType = "";
         switch (typeName) {
-            case "boolean":
-                warpperType = ".booleanValue()";
-                break;
-            case "byte":
-                warpperType = ".byteValue()";
-                break;
-            case "char":
-                warpperType = ".charValue()";
-                break;
-            case "double":
-                warpperType = ".doubleValue()";
-                break;
-            case "float":
-                warpperType = ".floatValue()";
-                break;
-            case "int":
-                warpperType = ".intValue()";
-                break;
-            case "long":
-                warpperType = ".longValue()";
-                break;
-            case "short":
-                warpperType = ".shortValue()";
-                break;
-            default:
-                break;
+        case "boolean":
+            warpperType = ".booleanValue()";
+            break;
+        case "byte":
+            warpperType = ".byteValue()";
+            break;
+        case "char":
+            warpperType = ".charValue()";
+            break;
+        case "double":
+            warpperType = ".doubleValue()";
+            break;
+        case "float":
+            warpperType = ".floatValue()";
+            break;
+        case "int":
+            warpperType = ".intValue()";
+            break;
+        case "long":
+            warpperType = ".longValue()";
+            break;
+        case "short":
+            warpperType = ".shortValue()";
+            break;
+        default:
+            break;
         }
         return warpperType;
     }

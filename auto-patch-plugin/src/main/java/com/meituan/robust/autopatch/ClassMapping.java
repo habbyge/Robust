@@ -8,9 +8,8 @@ import java.util.Map;
  * ClassMapping stores mapping info read from mapping.txt
  */
 public class ClassMapping {
-    //method 存储的信息有：返回值，方法名，参数列表，混淆后的名字
-    //字段 存储的信息有：字段名，混淆后的名字
-
+    // method 存储的信息有：返回值，方法名，参数列表，混淆后的名字
+    // 字段 存储的信息有：字段名，混淆后的名字
     private String className;
     private String valueName;
     private Map<String, String> memberMapping = new HashMap<>();

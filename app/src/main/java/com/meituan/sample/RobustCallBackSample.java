@@ -32,7 +32,6 @@ public class RobustCallBackSample implements RobustCallBack {
     public void onPatchApplied(boolean result, Patch patch) {
         Log.d("RobustCallBack", "onPatchApplied result: " + result);
         Log.d("RobustCallBack", "onPatchApplied patch: " + patch.getName());
-
     }
 
     @Override

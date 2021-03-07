@@ -7,5 +7,5 @@ import java.util.List;
  * an interface describe patch.jar info
  */
 public interface PatchesInfo {
-    List<PatchedClassInfo> getPatchedClassesInfo();
+    List<PatchedCxlassInfo> getPatchedClassesInfo();
 }

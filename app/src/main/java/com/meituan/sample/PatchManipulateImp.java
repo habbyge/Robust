@@ -39,31 +39,35 @@ import java.util.List;
 public class PatchManipulateImp extends PatchManipulate {
 
     /***
-     * connect to the network ,get the latest patches
-     * l联网获取最新的补丁
+     * connect to the network, get the latest patches
+     * 联网获取最新的补丁
      */
     @Override
     protected List<Patch> fetchPatchList(Context context) {
-        //将app自己的robustApkHash上报给服务端，服务端根据robustApkHash来区分每一次apk build来给app下发补丁
-        //apkhash is the unique identifier for  apk,so you cannnot patch wrong apk.
+        // 将app自己的robustApkHash上报给服务端，服务端根据robustApkHash来区分每一次apk build来给app下发补丁
+        // apkhash is the unique identifier for apk, so you cannnot patch wrong apk.
         String robustApkHash = RobustApkHashUtils.readRobustApkHash(context);
         Log.w("robust", "robustApkHash :" + robustApkHash);
+
         //connect to network to get patch list on servers
-        //在这里去联网获取补丁列表
+        // 在这里去联网获取补丁列表
         Patch patch = new Patch();
         patch.setName("123");
 
+        // 设置pacth包的地址
         // we recommend LocalPath store the origin patch.jar which may be encrypted,while TempPath is the true runnable jar
-        // LocalPath是存储原始的补丁文件，这个文件应该是加密过的，TempPath是加密之后的，TempPath下的补丁加载完毕就删除，保证安全性
+        // LocalPath 是存储原始的补丁文件，这个文件应该是加密过的，TempPath是加密之后的，TempPath下的补丁加载完毕就删除，保证安全性
         // 这里面需要设置一些补丁的信息，主要是联网的获取的补丁信息。重要的如MD5，进行原始补丁文件的简单校验，
-        // 以及补丁存储的位置，这边推荐把补丁的储存位置放置到应用的私有目录下，保证安全性
+        // 以及补丁存储的位置，这边推荐把补丁的储存位置放置到应用的私有目录下，保证安全性.
         patch.setLocalPath(Environment.getExternalStorageDirectory().getPath()
                 + File.separator + "robust" + File.separator + "patch");
 
-        //setPatchesInfoImplClassFullName 设置项各个App可以独立定制，需要确保的是setPatchesInfoImplClassFullName设置的包名
+        // 这个包必须和 patchpackname 设置的要一致，patchpackname + '.pachesInfoImpl'
+        // setPatchesInfoImplClassFullName 设置项各个App可以独立定制，需要确保的是setPatchesInfoImplClassFullName设置的包名
         // 是和xml配置项patchPackname保持一致，而且类名必须是：PatchesInfoImpl，请注意这里的设置
         patch.setPatchesInfoImplClassFullName("com.meituan.robust.patch.PatchesInfoImpl");
-        List patches = new ArrayList<Patch>();
+
+        List<Patch> patches = new ArrayList<Patch>();
         patches.add(patch);
         return patches;
     }
@@ -75,14 +79,16 @@ public class PatchManipulateImp extends PatchManipulate {
 
     protected boolean verifyPatch(Context context, Patch patch) {
         //do your verification, put the real patch to patch
-        //放到app的私有目录
+        // 放到app的私有目录
         patch.setTempPath(context.getCacheDir() + File.separator + "robust" + File.separator + "patch");
         //in the sample we just copy the file
         try {
             copy(patch.getLocalPath(), patch.getTempPath());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("copy source patch to local patch error, no patch execute in path "
+
+            throw new RuntimeException(
+                    "copy source patch to local patch error, no patch execute in path "
                     + patch.getTempPath());
         }
 

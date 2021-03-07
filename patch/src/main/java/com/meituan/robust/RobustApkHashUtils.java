@@ -14,11 +14,9 @@ public class RobustApkHashUtils {
     private static String robustApkHashValue;
 
     public static String readRobustApkHash(Context context) {
-
         if (TextUtils.isEmpty(robustApkHashValue)) {
             robustApkHashValue = readRobustApkHashFile(context);
         }
-
         return robustApkHashValue;
     }
 
@@ -31,7 +29,6 @@ public class RobustApkHashUtils {
         try {
             value = readFirstLine(context, Constants.ROBUST_APK_HASH_FILE_NAME);
         } catch (Throwable throwable) {
-
         }
 
         return value;
@@ -40,9 +37,7 @@ public class RobustApkHashUtils {
     private static String readFirstLine(Context context, String fileName) {
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(
-                    new InputStreamReader(context.getAssets().open(fileName)));
-
+            reader = new BufferedReader(new InputStreamReader(context.getAssets().open(fileName)));
             return reader.readLine();
         } catch (IOException e) {
             return "";
@@ -55,5 +50,4 @@ public class RobustApkHashUtils {
             }
         }
     }
-
 }
